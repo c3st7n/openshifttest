@@ -1,10 +1,14 @@
 apiVersion: apps.openshift.io/v1
 kind: DeploymentConfig
 metadata:
-  name: test-scenario1
+  name: test-scenario2
+  labels:
+    app: test-scenario2
   namespace: timings-test
 spec:
   replicas: 1
+  selector:
+    deploymentconfig: test-scenario2
   revisionHistoryLimit: 20
   strategy:
     activeDeadlineSeconds: 21600
@@ -13,9 +17,13 @@ spec:
     resources: {}
     type: Recreate
   template:
+    metadata:
+      labels:
+        app: test-scenario2
+        deploymentconfig: test-scenario2
     spec:
       containers:
-        - image: tester1
+        - image: timings-test/tester:latest
           name: c1
           ports:
             - containerPort: 8080
@@ -26,9 +34,7 @@ spec:
           volumeMounts:
             - mountPath: /loap
               name: timing
-            - mountPath: /scripts
-              name: volume-q96uo
-        - image: tester1
+        - image: timings-test/tester:latest
           lifecycle:
           lifecycle:
             preStop:
@@ -50,9 +56,7 @@ spec:
           volumeMounts:
             - mountPath: /loap
               name: timing
-            - mountPath: /scripts
-              name: volume-q96uo
-        - image: tester1
+        - image: timings-test/tester:latest
           lifecycle:
             preStop:
               exec:
@@ -73,8 +77,6 @@ spec:
           volumeMounts:
             - mountPath: /loap
               name: timing
-            - mountPath: /scripts
-              name: volume-q96uo
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
@@ -84,10 +86,6 @@ spec:
         - name: timing
           persistentVolumeClaim:
             claimName: test
-        - configMap:
-            defaultMode: 420
-            name: script
-          name: volume-q96uo
   test: false
   triggers:
     - type: ConfigChange

@@ -5,4 +5,4 @@ RUN yum install -y vim && \
     chmod +x /main.sh && \
     yum clean all
 
-CMD /main.sh
+CMD [ "/bin/bash", "-c", "/main.sh" ]
