@@ -1,0 +1,93 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  name: test-scenario1
+  namespace: timings-test
+spec:
+  replicas: 1
+  revisionHistoryLimit: 20
+  strategy:
+    activeDeadlineSeconds: 21600
+    recreateParams:
+      timeoutSeconds: 600
+    resources: {}
+    type: Recreate
+  template:
+    spec:
+      containers:
+        - image: tester1
+          name: c1
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /loap
+              name: timing
+            - mountPath: /scripts
+              name: volume-q96uo
+        - image: tester1
+          lifecycle:
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - sh
+                  - '-c'
+                  - >-
+                    echo $(date): C2: PRE-STOP-HOOK START >> /loap/timing ;
+                    sleep 60; echo $(date): C2: PRE-STOP-HOOK FINISH >>
+                    /loap/timing
+          name: c2
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /loap
+              name: timing
+            - mountPath: /scripts
+              name: volume-q96uo
+        - image: tester1
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - sh
+                  - '-c'
+                  - >-
+                    echo $(date): C3: PRE-STOP-HOOK START >> /loap/timing ;
+                    sleep 180; echo $(date): C3: PRE-STOP-HOOK FINISH >>
+                    /loap/timing
+          name: c3
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /loap
+              name: timing
+            - mountPath: /scripts
+              name: volume-q96uo
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: timing
+          persistentVolumeClaim:
+            claimName: test
+        - configMap:
+            defaultMode: 420
+            name: script
+          name: volume-q96uo
+  test: false
+  triggers:
+    - type: ConfigChange
